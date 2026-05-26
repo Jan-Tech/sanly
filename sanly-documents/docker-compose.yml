@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  db-documents:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sanly_documents
+      POSTGRES_USER: documents_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-documents_pass}
+    ports:
+      - "5451:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U documents_user -d sanly_documents"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - docs_data:/var/lib/postgresql/data
+
+  sanly-documents:
+    build: .
+    ports:
+      - "8102:8102"
+    environment:
+      DB_URL: jdbc:postgresql://db-documents:5432/sanly_documents
+      DB_USERNAME: documents_user
+      DB_PASSWORD: ${DB_PASSWORD:-documents_pass}
+      JWT_SECRET: ${JWT_SECRET}
+      SERVER_CERT_SECRET: ${SERVER_CERT_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      REGISTRY_URL: ${REGISTRY_URL:-http://localhost:8080}
+      REGISTRY_INSTITUTION_TOKEN: ${REGISTRY_INSTITUTION_TOKEN}
+      CIVIL_SERVICE_TOKEN: ${CIVIL_SERVICE_TOKEN:-civil-token}
+      DMV_SERVICE_TOKEN: ${DMV_SERVICE_TOKEN:-dmv-token}
+      EDUCATION_SERVICE_TOKEN: ${EDUCATION_SERVICE_TOKEN:-education-token}
+      LAND_SERVICE_TOKEN: ${LAND_SERVICE_TOKEN:-land-token}
+      BUSINESS_SERVICE_TOKEN: ${BUSINESS_SERVICE_TOKEN:-business-token}
+      TAX_SERVICE_TOKEN: ${TAX_SERVICE_TOKEN:-tax-token}
+      POLICE_SERVICE_TOKEN: ${POLICE_SERVICE_TOKEN:-police-token}
+      MEDICAL_SERVICE_TOKEN: ${MEDICAL_SERVICE_TOKEN:-medical-token}
+      COURT_SERVICE_TOKEN: ${COURT_SERVICE_TOKEN:-court-token}
+      PENSION_SERVICE_TOKEN: ${PENSION_SERVICE_TOKEN:-pension-token}
+      VEHICLE_SERVICE_TOKEN: ${VEHICLE_SERVICE_TOKEN:-vehicle-token}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL:-http://localhost:8088}
+      NOTIFICATIONS_KEY_DOCUMENTS: ${NOTIFICATIONS_KEY_DOCUMENTS:-documents-default-key-change-me}
+      TRACKING_SERVICE_KEY: ${TRACKING_SERVICE_KEY:-tracking-internal-key-change-me}
+    depends_on:
+      db-documents:
+        condition: service_healthy
+
+volumes:
+  docs_data:

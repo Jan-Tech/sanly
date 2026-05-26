@@ -1,0 +1,64 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test_bridge
+    username: test
+    password: test
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 0
+
+# ===== JWT (32-char test secret) =====
+jwt:
+  secret: "01234567890123456789012345678901"
+  expiration-ms: 86400000
+
+# ===== Seed admin user =====
+seed:
+  admin:
+    username: admin
+    password: "TestAdmin123!"
+
+# ===== Rate limiting (generous in tests) =====
+rate-limit:
+  admin:
+    capacity: 100000
+    refill-tokens: 100000
+    refill-duration-minutes: 1
+  institution:
+    capacity: 100000
+    refill-tokens: 100000
+    refill-duration-minutes: 1
+
+# ===== External services (mocked in tests) =====
+notification:
+  base-url: "http://localhost:19999"
+  service-key: "test-notification-key"
+
+logging:
+  level:
+    com.sanly.bridge: INFO
+    org.flywaydb: INFO
+    org.springframework.security: WARN

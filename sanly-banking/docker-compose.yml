@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+
+  banking:
+    build: .
+    container_name: sanly-banking-app
+    ports:
+      - "${SERVER_PORT:-8104}:8104"
+    environment:
+      DB_URL: jdbc:postgresql://banking-postgres:5432/sanly_banking
+      DB_USERNAME: ${DB_USERNAME:-banking_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set — 32-byte Base64-encoded AES-256 key}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      REGISTRY_URL: ${REGISTRY_URL:-http://localhost:8080}
+      REGISTRY_INSTITUTION_TOKEN: ${REGISTRY_INSTITUTION_TOKEN:?REGISTRY_INSTITUTION_TOKEN must be set}
+      REGISTRY_SERVICE_KEY: ${REGISTRY_SERVICE_KEY:-registry-banking-key}
+      TAX_URL: ${TAX_URL:-http://localhost:8085}
+      TAX_SERVICE_TOKEN: ${TAX_SERVICE_TOKEN:?TAX_SERVICE_TOKEN must be set}
+      POLICE_URL: ${POLICE_URL:-http://localhost:8084}
+      POLICE_SERVICE_TOKEN: ${POLICE_SERVICE_TOKEN:?POLICE_SERVICE_TOKEN must be set}
+      BUSINESS_URL: ${BUSINESS_URL:-http://localhost:8086}
+      BUSINESS_SERVICE_TOKEN: ${BUSINESS_SERVICE_TOKEN:?BUSINESS_SERVICE_TOKEN must be set}
+      LAND_URL: ${LAND_URL:-http://localhost:8091}
+      LAND_SERVICE_TOKEN: ${LAND_SERVICE_TOKEN:?LAND_SERVICE_TOKEN must be set}
+      PENSION_URL: ${PENSION_URL:-http://localhost:8099}
+      PENSION_SERVICE_TOKEN: ${PENSION_SERVICE_TOKEN:?PENSION_SERVICE_TOKEN must be set}
+      DMV_URL: ${DMV_URL:-http://localhost:8083}
+      DMV_SERVICE_TOKEN: ${DMV_SERVICE_TOKEN:?DMV_SERVICE_TOKEN must be set}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL:-http://localhost:8088}
+      NOTIFICATIONS_KEY_BANKING: ${NOTIFICATIONS_KEY_BANKING:-banking-default-key-change-me}
+    depends_on:
+      banking-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sanly-banking-net
+
+  banking-postgres:
+    image: postgres:16-alpine
+    container_name: sanly-banking-postgres
+    ports:
+      - "5453:5432"
+    environment:
+      POSTGRES_DB: sanly_banking
+      POSTGRES_USER: ${DB_USERNAME:-banking_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes:
+      - banking-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-banking_user} -d sanly_banking"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sanly-banking-net
+
+  banking-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sanly-banking-pgadmin
+    ports:
+      - "5063:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@sanly.tm}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin}
+    depends_on:
+      - banking-postgres
+    restart: unless-stopped
+    networks:
+      - sanly-banking-net
+
+volumes:
+  banking-postgres-data:
+    driver: local
+
+networks:
+  sanly-banking-net:
+    driver: bridge

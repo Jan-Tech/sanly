@@ -1,0 +1,54 @@
+version: '3.8'
+services:
+  tax:
+    build: .
+    container_name: sanly-tax-app
+    ports: ["${SERVER_PORT:-8085}:8085"]
+    environment:
+      DB_URL: jdbc:postgresql://tax-postgres:5432/sanly_tax
+      DB_USERNAME: ${DB_USERNAME:-tax_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      CITIZEN_REGISTRY_URL: ${CITIZEN_REGISTRY_URL:-http://host.docker.internal:8080}
+      CITIZEN_REGISTRY_TOKEN: ${CITIZEN_REGISTRY_TOKEN:?CITIZEN_REGISTRY_TOKEN must be set}
+      BRIDGE_URL: ${BRIDGE_URL:-http://host.docker.internal:8081}
+      BRIDGE_INSTITUTION_KEY: ${BRIDGE_INSTITUTION_KEY:?BRIDGE_INSTITUTION_KEY must be set}
+    depends_on:
+      tax-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [sanly-tax-net]
+  tax-postgres:
+    image: postgres:16-alpine
+    container_name: sanly-tax-postgres
+    ports: ["5437:5432"]
+    environment:
+      POSTGRES_DB: sanly_tax
+      POSTGRES_USER: ${DB_USERNAME:-tax_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes: [tax-postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${DB_USERNAME:-tax_user} -d sanly_tax"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [sanly-tax-net]
+  tax-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sanly-tax-pgadmin
+    ports: ["5055:80"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@sanly.tm}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin}
+    depends_on: [tax-postgres]
+    restart: unless-stopped
+    networks: [sanly-tax-net]
+volumes:
+  tax-postgres-data:
+networks:
+  sanly-tax-net:
+    driver: bridge

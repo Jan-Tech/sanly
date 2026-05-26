@@ -1,0 +1,6 @@
+package com.sanly.land.entity;
+
+public enum PropertyType {
+    RESIDENTIAL_APARTMENT, RESIDENTIAL_HOUSE, COMMERCIAL,
+    AGRICULTURAL, INDUSTRIAL, LAND_PLOT, GARAGE, OTHER
+}

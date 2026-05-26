@@ -1,0 +1,13 @@
+package com.sanly.analytics.entity;
+
+public enum ReportType {
+    POPULATION_SUMMARY,
+    BUSINESS_ACTIVITY,
+    SERVICE_USAGE,
+    ANTI_CORRUPTION_METRICS,
+    REGIONAL_BREAKDOWN,
+    ECONOMIC_INDICATORS,
+    PLATFORM_HEALTH,
+    FULL_GOVERNMENT_REPORT,
+    AUDIT_LOG
+}

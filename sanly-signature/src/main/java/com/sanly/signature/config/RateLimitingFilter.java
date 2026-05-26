@@ -1,0 +1,49 @@
+package com.sanly.signature.config;
+
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Refill;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Component
+public class RateLimitingFilter extends OncePerRequestFilter {
+
+    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+
+    private Bucket createBucket(String ip) {
+        return buckets.computeIfAbsent(ip, k ->
+                Bucket.builder()
+                        .addLimit(Bandwidth.classic(100, Refill.greedy(100, Duration.ofMinutes(1))))
+                        .build());
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+        // Skip rate limiting for internal service-to-service calls
+        if (request.getHeader("X-Service-Key") != null) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        String ip = request.getRemoteAddr();
+        if (createBucket(ip).tryConsume(1)) {
+            chain.doFilter(request, response);
+        } else {
+            response.setStatus(429);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":false,\"message\":\"Too Many Requests — please slow down\"}");
+        }
+    }
+}

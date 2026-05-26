@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  db-land:
+    image: postgres:16-alpine
+    container_name: db-land-dev
+    environment:
+      POSTGRES_DB: sanly_land
+      POSTGRES_USER: ${LAND_DB_USER:-land_user}
+      POSTGRES_PASSWORD: ${LAND_DB_PASSWORD:-land_pass}
+    ports:
+      - "5443:5432"
+    volumes:
+      - db_land_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d sanly_land"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sanly-land:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sanly-land-dev
+    ports:
+      - "8091:8091"
+    environment:
+      DB_URL: jdbc:postgresql://db-land:5432/sanly_land
+      DB_USERNAME: ${LAND_DB_USER:-land_user}
+      DB_PASSWORD: ${LAND_DB_PASSWORD:-land_pass}
+      JWT_SECRET: ${LAND_JWT_SECRET}
+      ENCRYPTION_KEY: ${LAND_ENCRYPTION_KEY}
+      ADMIN_PASSWORD: ${LAND_ADMIN_PASSWORD:-admin123}
+      CITIZEN_REGISTRY_URL: ${CITIZEN_REGISTRY_URL:-http://localhost:8080}
+      CITIZEN_REGISTRY_TOKEN: ${CITIZEN_REGISTRY_TOKEN}
+      BRIDGE_URL: ${BRIDGE_URL:-http://localhost:8081}
+      BRIDGE_INSTITUTION_KEY: ${BRIDGE_INSTITUTION_KEY_LAND}
+      NOTIFICATION_URL: ${NOTIFICATION_URL:-http://localhost:8088}
+      NOTIFICATION_SERVICE_KEY: ${NOTIFICATIONS_KEY_LAND:-land-default-key-change-me}
+      LIFE_EVENT_SERVICE_KEY: ${LIFE_EVENT_SERVICE_KEY:-change-me-life-event-key}
+    depends_on:
+      db-land:
+        condition: service_healthy
+
+volumes:
+  db_land_dev:

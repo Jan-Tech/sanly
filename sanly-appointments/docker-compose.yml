@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  db-appointments:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sanly_appointments
+      POSTGRES_USER: ${DB_USERNAME:-appointments_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-appointments_pass}
+    ports:
+      - "5450:5432"
+    volumes:
+      - apt_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appointments_user -d sanly_appointments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sanly-appointments:
+    build: .
+    ports:
+      - "8101:8101"
+    environment:
+      DB_URL: jdbc:postgresql://db-appointments:5432/sanly_appointments
+      DB_USERNAME: ${DB_USERNAME:-appointments_user}
+      DB_PASSWORD: ${DB_PASSWORD:-appointments_pass}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      REGISTRY_URL: ${REGISTRY_URL:-http://localhost:8080}
+      REGISTRY_INSTITUTION_TOKEN: ${REGISTRY_INSTITUTION_TOKEN}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL:-http://localhost:8088}
+      NOTIFICATIONS_KEY_APPOINTMENTS: ${NOTIFICATIONS_KEY_APPOINTMENTS:-appointments-default-key-change-me}
+    depends_on:
+      db-appointments:
+        condition: service_healthy
+
+volumes:
+  apt_data:

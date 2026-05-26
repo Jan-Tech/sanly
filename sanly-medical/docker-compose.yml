@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+
+  medical:
+    build: .
+    container_name: sanly-medical-app
+    ports:
+      - "${SERVER_PORT:-8082}:8082"
+    environment:
+      DB_URL: jdbc:postgresql://medical-postgres:5432/sanly_medical
+      DB_USERNAME: ${DB_USERNAME:-medical_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      CITIZEN_REGISTRY_URL: ${CITIZEN_REGISTRY_URL:-http://host.docker.internal:8080}
+      CITIZEN_REGISTRY_TOKEN: ${CITIZEN_REGISTRY_TOKEN:?CITIZEN_REGISTRY_TOKEN must be set}
+      BRIDGE_URL: ${BRIDGE_URL:-http://host.docker.internal:8081}
+      BRIDGE_INSTITUTION_KEY: ${BRIDGE_INSTITUTION_KEY:?BRIDGE_INSTITUTION_KEY must be set}
+    depends_on:
+      medical-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - sanly-medical-net
+
+  medical-postgres:
+    image: postgres:16-alpine
+    container_name: sanly-medical-postgres
+    ports:
+      - "5434:5432"   # 5434 avoids collision with citizen-registry (5432) and bridge (5433)
+    environment:
+      POSTGRES_DB: sanly_medical
+      POSTGRES_USER: ${DB_USERNAME:-medical_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes:
+      - medical-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-medical_user} -d sanly_medical"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sanly-medical-net
+
+  medical-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sanly-medical-pgadmin
+    ports:
+      - "5052:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@sanly.tm}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin}
+    depends_on:
+      - medical-postgres
+    restart: unless-stopped
+    networks:
+      - sanly-medical-net
+
+volumes:
+  medical-postgres-data:
+    driver: local
+
+networks:
+  sanly-medical-net:
+    driver: bridge

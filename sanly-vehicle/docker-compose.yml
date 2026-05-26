@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  db-vehicle:
+    image: postgres:16-alpine
+    container_name: db-vehicle-standalone
+    environment:
+      POSTGRES_DB: sanly_vehicle
+      POSTGRES_USER: vehicle_user
+      POSTGRES_PASSWORD: vehicle_pass
+    volumes:
+      - db_vehicle_standalone:/var/lib/postgresql/data
+    ports:
+      - "5447:5432"
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -d sanly_vehicle]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sanly-vehicle:
+    build: .
+    container_name: sanly-vehicle-standalone
+    ports:
+      - "8096:8096"
+    environment:
+      DB_URL: jdbc:postgresql://db-vehicle:5432/sanly_vehicle
+      DB_USERNAME: vehicle_user
+      DB_PASSWORD: vehicle_pass
+      JWT_SECRET: change-me-jwt-secret-32-chars-minimum
+      ENCRYPTION_KEY: change-me-aes-256-key-32-chars!!
+      ADMIN_PASSWORD: admin123
+      CITIZEN_REGISTRY_URL: http://host.docker.internal:8080
+      CITIZEN_REGISTRY_TOKEN: placeholder
+      BRIDGE_URL: http://host.docker.internal:8081
+      BRIDGE_INSTITUTION_KEY: placeholder
+      SERVER_PORT: 8096
+      NOTIFICATION_URL: http://host.docker.internal:8088
+      NOTIFICATION_SERVICE_KEY: vehicle-default-key-change-me
+      LIFE_EVENT_SERVICE_KEY: change-me-life-event-key
+    depends_on:
+      db-vehicle:
+        condition: service_healthy
+
+volumes:
+  db_vehicle_standalone:

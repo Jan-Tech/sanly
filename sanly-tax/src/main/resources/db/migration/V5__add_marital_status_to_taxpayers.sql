@@ -1,0 +1,3 @@
+ALTER TABLE taxpayer_records
+    ADD COLUMN IF NOT EXISTS marital_status  VARCHAR(15) NOT NULL DEFAULT 'SINGLE',
+    ADD COLUMN IF NOT EXISTS spouse_national_id VARCHAR(11);

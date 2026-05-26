@@ -1,0 +1,6 @@
+package com.sanly.social.entity;
+
+public enum BenefitType {
+    CHILD_BENEFIT, MATERNITY, PATERNITY, DISABILITY, UNEMPLOYMENT,
+    PENSION, SURVIVOR, HOUSING, EDUCATION_GRANT, LOW_INCOME
+}

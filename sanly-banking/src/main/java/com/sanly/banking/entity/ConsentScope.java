@@ -1,0 +1,15 @@
+package com.sanly.banking.entity;
+
+public enum ConsentScope {
+    IDENTITY_BASIC,
+    IDENTITY_FULL,
+    TAX_STATUS,
+    TAX_INCOME_CLASS,
+    CRIMINAL_CLEARANCE,
+    BUSINESS_OWNERSHIP,
+    PROPERTY_OWNERSHIP,
+    PENSION_STATUS,
+    EMPLOYMENT_STATUS,
+    MEDICAL_CLEARANCE,
+    DRIVING_LICENSE
+}

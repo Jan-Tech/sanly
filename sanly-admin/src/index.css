@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply font-sans bg-background text-dark antialiased; }
+  * { @apply box-border; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg
+           bg-primary text-white font-medium text-sm
+           hover:bg-primary-dark active:scale-[0.98]
+           transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg
+           bg-white text-dark border border-gray-200 font-medium text-sm
+           hover:bg-gray-50 active:scale-[0.98] transition-all duration-150;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg
+           bg-red-600 text-white font-medium text-sm
+           hover:bg-red-700 active:scale-[0.98] transition-all duration-150;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg
+           text-gray-500 text-sm font-medium hover:bg-gray-100 hover:text-dark
+           transition-all duration-150;
+  }
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white
+           text-sm text-dark placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary
+           transition-colors duration-150;
+  }
+  .select {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white
+           text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/30
+           focus:border-primary transition-colors cursor-pointer;
+  }
+  .label { @apply block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide; }
+  .card { @apply bg-white rounded-xl shadow-card border border-gray-100 p-5; }
+  .page-title { @apply text-xl font-semibold text-dark; }
+  .section-title { @apply text-sm font-semibold text-dark uppercase tracking-wide mb-3; }
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f4f5 25%, #e8eef0 50%, #f0f4f5 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}

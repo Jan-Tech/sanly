@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+  business:
+    build: .
+    container_name: sanly-business-app
+    ports: ["${SERVER_PORT:-8086}:8086"]
+    environment:
+      DB_URL: jdbc:postgresql://business-postgres:5432/sanly_business
+      DB_USERNAME: ${DB_USERNAME:-business_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      CITIZEN_REGISTRY_URL: ${CITIZEN_REGISTRY_URL:-http://host.docker.internal:8080}
+      CITIZEN_REGISTRY_TOKEN: ${CITIZEN_REGISTRY_TOKEN:?CITIZEN_REGISTRY_TOKEN must be set}
+      BRIDGE_URL: ${BRIDGE_URL:-http://host.docker.internal:8081}
+      BRIDGE_INSTITUTION_KEY: ${BRIDGE_INSTITUTION_KEY:?BRIDGE_INSTITUTION_KEY must be set}
+    depends_on:
+      business-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [sanly-business-net]
+  business-postgres:
+    image: postgres:16-alpine
+    container_name: sanly-business-postgres
+    ports: ["5438:5432"]
+    environment:
+      POSTGRES_DB: sanly_business
+      POSTGRES_USER: ${DB_USERNAME:-business_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes: [business-postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U business_user -d sanly_business
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [sanly-business-net]
+  business-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sanly-business-pgadmin
+    ports: ["5056:80"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@sanly.tm}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin}
+    depends_on: [business-postgres]
+    restart: unless-stopped
+    networks: [sanly-business-net]
+volumes:
+  business-postgres-data:
+networks:
+  sanly-business-net:
+    driver: bridge

@@ -1,0 +1,62 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: sanly-civil
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5439/sanly_civil}
+    username: ${SPRING_DATASOURCE_USERNAME:civil_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:civil_pass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+encryption:
+  key: ${ENCRYPTION_KEY}
+
+citizen-registry:
+  base-url: ${CITIZEN_REGISTRY_BASE_URL:http://localhost:8080}
+  token: ${CITIZEN_REGISTRY_TOKEN}
+  admin-token: ${CITIZEN_REGISTRY_ADMIN_TOKEN}
+
+bridge:
+  base-url: ${BRIDGE_BASE_URL:http://localhost:8081}
+  institution-code: ${BRIDGE_INSTITUTION_CODE:INST_CIVIL}
+  institution-key: ${BRIDGE_INSTITUTION_KEY}
+
+notification:
+  base-url: ${NOTIFICATION_URL:http://localhost:8088}
+  service-key: ${NOTIFICATION_SERVICE_KEY:civil-default-key-change-me}
+
+life-event:
+  service-key:    ${LIFE_EVENT_SERVICE_KEY:change-me-life-event-key}
+  tax-url:        ${LIFE_EVENT_TAX_URL:http://localhost:8085}
+  dmv-url:        ${LIFE_EVENT_DMV_URL:http://localhost:8083}
+  business-url:   ${LIFE_EVENT_BUSINESS_URL:http://localhost:8086}
+  medical-url:    ${LIFE_EVENT_MEDICAL_URL:http://localhost:8082}
+  education-url:  ${LIFE_EVENT_EDUCATION_URL:http://localhost:8090}
+  land-url:       ${LIFE_EVENT_LAND_URL:http://localhost:8091}
+  social-url:     ${LIFE_EVENT_SOCIAL_URL:http://localhost:8092}
+  vehicle-url:    ${LIFE_EVENT_VEHICLE_URL:http://localhost:8096}
+  pension-url:    ${LIFE_EVENT_PENSION_URL:http://localhost:8099}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

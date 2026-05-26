@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Sanly",
+    "slug": "sanly-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0D7377"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "tm.gov.sanly.mobile",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Use Face ID to securely authenticate to Sanly"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0D7377"
+      },
+      "package": "tm.gov.sanly.mobile"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-local-authentication",
+      "expo-font"
+    ],
+    "scheme": "sanly"
+  }
+}

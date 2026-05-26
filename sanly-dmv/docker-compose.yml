@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+
+  dmv:
+    build: .
+    container_name: sanly-dmv-app
+    ports:
+      - "${SERVER_PORT:-8083}:8083"
+    environment:
+      DB_URL: jdbc:postgresql://dmv-postgres:5432/sanly_dmv
+      DB_USERNAME: ${DB_USERNAME:-dmv_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      CITIZEN_REGISTRY_URL: ${CITIZEN_REGISTRY_URL:-http://host.docker.internal:8080}
+      CITIZEN_REGISTRY_TOKEN: ${CITIZEN_REGISTRY_TOKEN:?CITIZEN_REGISTRY_TOKEN must be set}
+      BRIDGE_URL: ${BRIDGE_URL:-http://host.docker.internal:8081}
+      BRIDGE_INSTITUTION_KEY: ${BRIDGE_INSTITUTION_KEY:?BRIDGE_INSTITUTION_KEY must be set}
+    depends_on:
+      dmv-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - sanly-dmv-net
+
+  dmv-postgres:
+    image: postgres:16-alpine
+    container_name: sanly-dmv-postgres
+    ports:
+      - "5435:5432"   # 5435 avoids collision with registry(5432), bridge(5433), medical(5434)
+    environment:
+      POSTGRES_DB: sanly_dmv
+      POSTGRES_USER: ${DB_USERNAME:-dmv_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes:
+      - dmv-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-dmv_user} -d sanly_dmv"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sanly-dmv-net
+
+  dmv-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sanly-dmv-pgadmin
+    ports:
+      - "5053:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@sanly.tm}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin}
+    depends_on:
+      - dmv-postgres
+    restart: unless-stopped
+    networks:
+      - sanly-dmv-net
+
+volumes:
+  dmv-postgres-data:
+    driver: local
+
+networks:
+  sanly-dmv-net:
+    driver: bridge

@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  db-court:
+    image: postgres:16-alpine
+    container_name: db-court-standalone
+    environment:
+      POSTGRES_DB: sanly_court
+      POSTGRES_USER: court_user
+      POSTGRES_PASSWORD: court_pass
+    volumes:
+      - db_court_standalone:/var/lib/postgresql/data
+    ports:
+      - "5446:5432"
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -d sanly_court]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sanly-court:
+    build: .
+    container_name: sanly-court-standalone
+    ports:
+      - "8094:8094"
+    environment:
+      DB_URL: jdbc:postgresql://db-court:5432/sanly_court
+      DB_USERNAME: court_user
+      DB_PASSWORD: court_pass
+      JWT_SECRET: change-me-jwt-secret-32-chars-minimum
+      ENCRYPTION_KEY: change-me-aes-256-key-32-chars!!
+      ADMIN_PASSWORD: admin123
+      CITIZEN_REGISTRY_URL: http://host.docker.internal:8080
+      CITIZEN_REGISTRY_TOKEN: placeholder
+      BRIDGE_URL: http://host.docker.internal:8081
+      BRIDGE_INSTITUTION_KEY: placeholder
+      SERVER_PORT: 8094
+      NOTIFICATION_URL: http://host.docker.internal:8088
+      NOTIFICATION_SERVICE_KEY: court-default-key-change-me
+      POLICE_URL: http://host.docker.internal:8084
+      COURT_POLICE_SERVICE_KEY: court-police-key-change-me
+    depends_on:
+      db-court:
+        condition: service_healthy
+
+volumes:
+  db_court_standalone:

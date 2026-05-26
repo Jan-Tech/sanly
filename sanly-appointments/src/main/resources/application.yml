@@ -1,0 +1,72 @@
+server:
+  port: 8101
+  error:
+    include-message: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: sanly-appointments
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5450/sanly_appointments}
+    username: ${DB_USERNAME:appointments_user}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 3
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+registry:
+  base-url: ${REGISTRY_URL:http://localhost:8080}
+  institution-token: ${REGISTRY_INSTITUTION_TOKEN}
+
+notification:
+  base-url: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
+  service-key: ${NOTIFICATIONS_KEY_APPOINTMENTS:appointments-default-key-change-me}
+
+tracking:
+  base-url: ${DOCUMENTS_URL:http://localhost:8102}
+  service-key: ${TRACKING_SERVICE_KEY:tracking-service-key-change-me}
+
+analytics:
+  base-url: ${ANALYTICS_URL:http://localhost:8103}
+  service-key: ${ANALYTICS_SERVICE_KEY:analytics-ingest-key-change-me}
+
+rate-limit:
+  capacity: 100
+  refill-minutes: 1
+  book-capacity: 10
+  book-refill-hours: 1
+
+seed:
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

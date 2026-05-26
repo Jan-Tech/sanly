@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  db-education:
+    image: postgres:16-alpine
+    container_name: db-education-dev
+    environment:
+      POSTGRES_DB: sanly_education
+      POSTGRES_USER: ${EDUCATION_DB_USER:-education_user}
+      POSTGRES_PASSWORD: ${EDUCATION_DB_PASSWORD:-education_pass}
+    ports:
+      - "5442:5432"
+    volumes:
+      - db_education_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d sanly_education"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sanly-education:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sanly-education-dev
+    ports:
+      - "8090:8090"
+    environment:
+      DB_URL: jdbc:postgresql://db-education:5432/sanly_education
+      DB_USERNAME: ${EDUCATION_DB_USER:-education_user}
+      DB_PASSWORD: ${EDUCATION_DB_PASSWORD:-education_pass}
+      JWT_SECRET: ${EDUCATION_JWT_SECRET}
+      ENCRYPTION_KEY: ${EDUCATION_ENCRYPTION_KEY}
+      ADMIN_PASSWORD: ${EDUCATION_ADMIN_PASSWORD:-admin123}
+      CITIZEN_REGISTRY_URL: ${CITIZEN_REGISTRY_URL:-http://localhost:8080}
+      CITIZEN_REGISTRY_TOKEN: ${CITIZEN_REGISTRY_TOKEN}
+      BRIDGE_URL: ${BRIDGE_URL:-http://localhost:8081}
+      BRIDGE_INSTITUTION_KEY: ${BRIDGE_INSTITUTION_KEY_EDUCATION}
+      NOTIFICATION_URL: ${NOTIFICATION_URL:-http://localhost:8088}
+      NOTIFICATION_SERVICE_KEY: ${NOTIFICATIONS_KEY_EDUCATION:-education-default-key-change-me}
+      LIFE_EVENT_SERVICE_KEY: ${LIFE_EVENT_SERVICE_KEY:-change-me-life-event-key}
+    depends_on:
+      db-education:
+        condition: service_healthy
+
+volumes:
+  db_education_dev:

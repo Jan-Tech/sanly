@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+  db-signature:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sanly_signature
+      POSTGRES_USER: signature_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-signature_pass}
+    ports:
+      - "5449:5432"
+    volumes:
+      - sig_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signature_user -d sanly_signature"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sanly-signature:
+    build: .
+    ports:
+      - "8100:8100"
+    environment:
+      DB_URL: jdbc:postgresql://db-signature:5432/sanly_signature
+      DB_USERNAME: signature_user
+      DB_PASSWORD: ${DB_PASSWORD:-signature_pass}
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      SERVER_SIGNING_SECRET: ${SERVER_SIGNING_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      REGISTRY_URL: ${REGISTRY_URL:-http://localhost:8080}
+      SERVICE_KEY: ${SERVICE_KEY}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL:-http://localhost:8088}
+      NOTIFICATIONS_KEY_SIGNATURE: ${NOTIFICATIONS_KEY_SIGNATURE:-signature-default-key-change-me}
+      BRIDGE_URL: ${BRIDGE_URL:-http://localhost:8081}
+      BRIDGE_INSTITUTION_KEY_SIGNATURE: ${BRIDGE_INSTITUTION_KEY_SIGNATURE}
+    depends_on:
+      db-signature:
+        condition: service_healthy
+
+volumes:
+  sig_data:

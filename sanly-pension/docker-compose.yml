@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  db-pension:
+    image: postgres:16-alpine
+    container_name: db-pension-standalone
+    environment:
+      POSTGRES_DB: sanly_pension
+      POSTGRES_USER: pension_user
+      POSTGRES_PASSWORD: pension_pass
+    volumes:
+      - db_pension_standalone:/var/lib/postgresql/data
+    ports:
+      - "5448:5432"
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -d sanly_pension]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sanly-pension:
+    build: .
+    container_name: sanly-pension-standalone
+    ports:
+      - "8099:8099"
+    environment:
+      DB_URL: jdbc:postgresql://db-pension:5432/sanly_pension
+      DB_USERNAME: pension_user
+      DB_PASSWORD: pension_pass
+      JWT_SECRET: change-me-jwt-secret-32-chars-minimum
+      ENCRYPTION_KEY: change-me-aes-256-key-32-chars!!
+      ADMIN_PASSWORD: admin123
+      CITIZEN_REGISTRY_URL: http://host.docker.internal:8080
+      CITIZEN_REGISTRY_TOKEN: placeholder
+      BRIDGE_URL: http://host.docker.internal:8081
+      BRIDGE_INSTITUTION_KEY: placeholder
+      SERVER_PORT: 8099
+      NOTIFICATION_URL: http://host.docker.internal:8088
+      NOTIFICATION_SERVICE_KEY: pension-default-key-change-me
+      LIFE_EVENT_SERVICE_KEY: change-me-life-event-key
+    depends_on:
+      db-pension:
+        condition: service_healthy
+
+volumes:
+  db_pension_standalone:

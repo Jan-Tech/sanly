@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  civil-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: sanly_civil
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5439:5432"
+    volumes:
+      - civil_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U civil_user -d sanly_civil
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  civil-service:
+    build: .
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://civil-db:5432/sanly_civil
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      CITIZEN_REGISTRY_BASE_URL: ${CITIZEN_REGISTRY_BASE_URL}
+      CITIZEN_REGISTRY_TOKEN: ${CITIZEN_REGISTRY_TOKEN}
+      CITIZEN_REGISTRY_ADMIN_TOKEN: ${CITIZEN_REGISTRY_ADMIN_TOKEN}
+      BRIDGE_BASE_URL: ${BRIDGE_BASE_URL}
+      BRIDGE_INSTITUTION_CODE: INST_CIVIL
+      BRIDGE_INSTITUTION_KEY: ${BRIDGE_INSTITUTION_KEY}
+    depends_on:
+      civil-db:
+        condition: service_healthy
+
+volumes:
+  civil_db_data:

@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "SANLY Officer",
+    "slug": "sanly-officer-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A1A2E"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "tm.gov.sanly.officer",
+      "infoPlist": {
+        "NSCameraUsageDescription": "SANLY Officer uses the camera to scan citizen QR codes and identity documents.",
+        "NSFaceIDUsageDescription": "Use Face ID to securely authenticate as an officer.",
+        "NSLocationWhenInUseUsageDescription": "Location is used to log duty location for audit purposes."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1A1A2E"
+      },
+      "package": "tm.gov.sanly.officer",
+      "permissions": [
+        "CAMERA",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-local-authentication",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "SANLY Officer uses the camera to scan QR codes and barcodes."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#0D7377"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "sanly-officer-app"
+      }
+    }
+  }
+}

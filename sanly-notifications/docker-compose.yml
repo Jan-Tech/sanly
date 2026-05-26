@@ -1,0 +1,43 @@
+version: '3.9'
+
+# Standalone compose for sanly-notifications only.
+# For full-platform startup use the root docker-compose.yml.
+
+services:
+  db-notifications:
+    image: postgres:16-alpine
+    container_name: db-notifications
+    environment:
+      POSTGRES_DB: sanly_notifications
+      POSTGRES_USER: notifications_user
+      POSTGRES_PASSWORD: notifications_pass
+    volumes:
+      - db_notifications_data:/var/lib/postgresql/data
+    ports:
+      - "5440:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d sanly_notifications"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sanly-notifications:
+    build: .
+    container_name: sanly-notifications
+    ports:
+      - "8088:8088"
+    environment:
+      DB_URL: jdbc:postgresql://db-notifications:5432/sanly_notifications
+      DB_USERNAME: notifications_user
+      DB_PASSWORD: notifications_pass
+      JWT_SECRET: change-me-32-chars-minimum-secret
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+    depends_on:
+      db-notifications:
+        condition: service_healthy
+
+volumes:
+  db_notifications_data:

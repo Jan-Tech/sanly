@@ -1,0 +1,288 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: sanly-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      routes:
+        # ── Citizen Registry ──────────────────────────────────────────────────
+        - id: citizen-registry
+          uri: ${REGISTRY_URL:http://localhost:8090}
+          predicates:
+            - Path=/registry/**
+          filters:
+            - StripPrefix=1
+
+        # ── Sanly Bridge ──────────────────────────────────────────────────────
+        - id: sanly-bridge
+          uri: ${BRIDGE_URL:http://localhost:8091}
+          predicates:
+            - Path=/bridge/**
+          filters:
+            - StripPrefix=1
+
+        # ── Medical Service ───────────────────────────────────────────────────
+        - id: sanly-medical
+          uri: ${MEDICAL_URL:http://localhost:8082}
+          predicates:
+            - Path=/medical/**
+          filters:
+            - StripPrefix=1
+
+        # ── DMV Service ───────────────────────────────────────────────────────
+        - id: sanly-dmv
+          uri: ${DMV_URL:http://localhost:8083}
+          predicates:
+            - Path=/dmv/**
+          filters:
+            - StripPrefix=1
+
+        # ── Police Service ────────────────────────────────────────────────────
+        - id: sanly-police
+          uri: ${POLICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/police/**
+          filters:
+            - StripPrefix=1
+
+        # ── Tax Service ───────────────────────────────────────────────────────
+        - id: sanly-tax
+          uri: ${TAX_URL:http://localhost:8085}
+          predicates:
+            - Path=/tax/**
+          filters:
+            - StripPrefix=1
+
+        # ── Business Registry ─────────────────────────────────────────────────
+        - id: sanly-business
+          uri: ${BUSINESS_URL:http://localhost:8086}
+          predicates:
+            - Path=/business/**
+          filters:
+            - StripPrefix=1
+
+        # ── Civil Registry ────────────────────────────────────────────────────
+        - id: sanly-civil
+          uri: ${CIVIL_URL:http://localhost:8087}
+          predicates:
+            - Path=/civil/**
+          filters:
+            - StripPrefix=1
+
+        # ── Notifications Service ─────────────────────────────────────────────
+        - id: sanly-notifications
+          uri: ${NOTIFICATIONS_URL:http://localhost:8088}
+          predicates:
+            - Path=/notifications/**
+          filters:
+            - StripPrefix=1
+
+        # ── Pharmacy Service ──────────────────────────────────────────────────
+        - id: sanly-pharmacy
+          uri: ${PHARMACY_URL:http://localhost:8089}
+          predicates:
+            - Path=/pharmacy/**
+          filters:
+            - StripPrefix=1
+
+        # ── Education Service ─────────────────────────────────────────────────
+        - id: sanly-education
+          uri: ${EDUCATION_URL:http://localhost:8090}
+          predicates:
+            - Path=/education/**
+          filters:
+            - StripPrefix=1
+
+        # ── Land Registry ─────────────────────────────────────────────────────
+        - id: sanly-land
+          uri: ${LAND_URL:http://localhost:8091}
+          predicates:
+            - Path=/land/**
+          filters:
+            - StripPrefix=1
+
+        # ── Social Benefits Service ────────────────────────────────────────────
+        - id: sanly-social
+          uri: ${SOCIAL_URL:http://localhost:8092}
+          predicates:
+            - Path=/social/**
+          filters:
+            - StripPrefix=1
+
+        # ── Customs Service ────────────────────────────────────────────────────
+        - id: sanly-customs
+          uri: ${CUSTOMS_URL:http://localhost:8093}
+          predicates:
+            - Path=/customs/**
+          filters:
+            - StripPrefix=1
+
+        # ── Court Service ──────────────────────────────────────────────────────
+        - id: sanly-court
+          uri: ${COURT_URL:http://localhost:8094}
+          predicates:
+            - Path=/court/**
+          filters:
+            - StripPrefix=1
+
+        # ── Vehicle Registry ───────────────────────────────────────────────────
+        - id: sanly-vehicle
+          uri: ${VEHICLE_URL:http://localhost:8096}
+          predicates:
+            - Path=/vehicle/**
+          filters:
+            - StripPrefix=1
+
+        # ── Pension Service ────────────────────────────────────────────────────
+        - id: sanly-pension
+          uri: ${PENSION_URL:http://localhost:8099}
+          predicates:
+            - Path=/pension/**
+          filters:
+            - StripPrefix=1
+
+        # ── Digital Signature Service ──────────────────────────────────────────
+        - id: sanly-signature
+          uri: ${SIGNATURE_URL:http://localhost:8100}
+          predicates:
+            - Path=/signature/**
+          filters:
+            - StripPrefix=1
+
+        # ── Appointments Service ────────────────────────────────────────────────
+        - id: sanly-appointments
+          uri: ${APPOINTMENTS_URL:http://localhost:8101}
+          predicates:
+            - Path=/appointments/**
+          filters:
+            - StripPrefix=1
+
+        # ── Documents Service ───────────────────────────────────────────────────
+        - id: sanly-documents
+          uri: ${DOCUMENTS_URL:http://localhost:8102}
+          predicates:
+            - Path=/documents/**
+          filters:
+            - StripPrefix=1
+
+        # ── Analytics Service ───────────────────────────────────────────────────
+        # No StripPrefix — analytics exposes /api/v1/analytics/** internally.
+        - id: sanly-analytics
+          uri: ${ANALYTICS_URL:http://localhost:8103}
+          predicates:
+            - Path=/api/v1/analytics/**
+
+        # ── Banking API Service ─────────────────────────────────────────────────
+        # No StripPrefix — banking exposes /api/v1/banking/** internally.
+        - id: sanly-banking
+          uri: ${BANKING_URL:http://localhost:8104}
+          predicates:
+            - Path=/api/v1/banking/**
+
+# Aggregated OpenAPI: each backend URL is fetched by the Swagger UI
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: citizen-registry
+        url: /registry/v3/api-docs
+      - name: sanly-bridge
+        url: /bridge/v3/api-docs
+      - name: sanly-medical
+        url: /medical/v3/api-docs
+      - name: sanly-dmv
+        url: /dmv/v3/api-docs
+      - name: sanly-police
+        url: /police/v3/api-docs
+      - name: sanly-tax
+        url: /tax/v3/api-docs
+      - name: sanly-business
+        url: /business/v3/api-docs
+      - name: sanly-civil
+        url: /civil/v3/api-docs
+      - name: sanly-notifications
+        url: /notifications/v3/api-docs
+      - name: sanly-pharmacy
+        url: /pharmacy/v3/api-docs
+      - name: sanly-education
+        url: /education/v3/api-docs
+      - name: sanly-land
+        url: /land/v3/api-docs
+      - name: sanly-social
+        url: /social/v3/api-docs
+      - name: sanly-customs
+        url: /customs/v3/api-docs
+      - name: sanly-court
+        url: /court/v3/api-docs
+      - name: sanly-vehicle
+        url: /vehicle/v3/api-docs
+      - name: sanly-pension
+        url: /pension/v3/api-docs
+      - name: sanly-signature
+        url: /signature/v3/api-docs
+      - name: sanly-appointments
+        url: /appointments/v3/api-docs
+      - name: sanly-documents
+        url: /documents/v3/api-docs
+      - name: sanly-analytics
+        url: /api/v1/analytics/v3/api-docs
+      - name: sanly-banking
+        url: /api/v1/banking/v3/api-docs
+  api-docs:
+    path: /v3/api-docs
+
+# JWT validation (shared with citizen-registry)
+jwt:
+  secret: ${JWT_SECRET}
+
+# Rate limit: 200 req/min global, 20 req/min on auth paths
+rate-limit:
+  global-capacity: 200
+  global-refill-tokens: 200
+  global-refill-minutes: 1
+  auth-capacity: 20
+  auth-refill-tokens: 20
+  auth-refill-minutes: 1
+
+# Backend service URLs for health check
+services:
+  registry-url: ${REGISTRY_URL:http://localhost:8090}
+  bridge-url: ${BRIDGE_URL:http://localhost:8091}
+  medical-url: ${MEDICAL_URL:http://localhost:8082}
+  dmv-url: ${DMV_URL:http://localhost:8083}
+  police-url: ${POLICE_URL:http://localhost:8084}
+  tax-url: ${TAX_URL:http://localhost:8085}
+  business-url: ${BUSINESS_URL:http://localhost:8086}
+  civil-url: ${CIVIL_URL:http://localhost:8087}
+  notifications-url: ${NOTIFICATIONS_URL:http://localhost:8088}
+  pharmacy-url: ${PHARMACY_URL:http://localhost:8089}
+  education-url: ${EDUCATION_URL:http://localhost:8090}
+  land-url: ${LAND_URL:http://localhost:8091}
+  social-url: ${SOCIAL_URL:http://localhost:8092}
+  customs-url: ${CUSTOMS_URL:http://localhost:8093}
+  court-url: ${COURT_URL:http://localhost:8094}
+  vehicle-url: ${VEHICLE_URL:http://localhost:8096}
+  pension-url: ${PENSION_URL:http://localhost:8099}
+  signature-url: ${SIGNATURE_URL:http://localhost:8100}
+  appointments-url: ${APPOINTMENTS_URL:http://localhost:8101}
+  documents-url: ${DOCUMENTS_URL:http://localhost:8102}
+  analytics-url: ${ANALYTICS_URL:http://localhost:8103}
+  banking-url: ${BANKING_URL:http://localhost:8104}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    com.sanly.gateway: INFO
+    org.springframework.cloud.gateway: WARN

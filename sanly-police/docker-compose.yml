@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  police:
+    build: .
+    container_name: sanly-police-app
+    ports:
+      - "${SERVER_PORT:-8084}:8084"
+    environment:
+      DB_URL: jdbc:postgresql://police-postgres:5432/sanly_police
+      DB_USERNAME: ${DB_USERNAME:-police_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      CITIZEN_REGISTRY_URL: ${CITIZEN_REGISTRY_URL:-http://host.docker.internal:8080}
+      CITIZEN_REGISTRY_TOKEN: ${CITIZEN_REGISTRY_TOKEN:?CITIZEN_REGISTRY_TOKEN must be set}
+      BRIDGE_URL: ${BRIDGE_URL:-http://host.docker.internal:8081}
+      BRIDGE_INSTITUTION_KEY: ${BRIDGE_INSTITUTION_KEY:?BRIDGE_INSTITUTION_KEY must be set}
+    depends_on:
+      police-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [sanly-police-net]
+
+  police-postgres:
+    image: postgres:16-alpine
+    container_name: sanly-police-postgres
+    ports: ["5436:5432"]
+    environment:
+      POSTGRES_DB: sanly_police
+      POSTGRES_USER: ${DB_USERNAME:-police_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes: [police-postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-police_user} -d sanly_police"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [sanly-police-net]
+
+  police-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sanly-police-pgadmin
+    ports: ["5053:80"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@sanly.tm}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin}
+    depends_on: [police-postgres]
+    restart: unless-stopped
+    networks: [sanly-police-net]
+
+volumes:
+  police-postgres-data:
+networks:
+  sanly-police-net:
+    driver: bridge

@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+
+  bridge:
+    build: .
+    container_name: sanly-bridge-app
+    ports:
+      - "${SERVER_PORT:-8081}:8081"
+    environment:
+      DB_URL: jdbc:postgresql://bridge-postgres:5432/sanly_bridge
+      DB_USERNAME: ${DB_USERNAME:-bridge_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+    depends_on:
+      bridge-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sanly-bridge-net
+
+  bridge-postgres:
+    image: postgres:16-alpine
+    container_name: sanly-bridge-postgres
+    ports:
+      - "5433:5432"     # 5433 to avoid collision with citizen-registry postgres
+    environment:
+      POSTGRES_DB: sanly_bridge
+      POSTGRES_USER: ${DB_USERNAME:-bridge_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes:
+      - bridge-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-bridge_user} -d sanly_bridge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sanly-bridge-net
+
+  bridge-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sanly-bridge-pgadmin
+    ports:
+      - "5051:80"       # 5051 to avoid collision with citizen-registry pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@sanly.tm}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin}
+    depends_on:
+      - bridge-postgres
+    restart: unless-stopped
+    networks:
+      - sanly-bridge-net
+
+volumes:
+  bridge-postgres-data:
+    driver: local
+
+networks:
+  sanly-bridge-net:
+    driver: bridge

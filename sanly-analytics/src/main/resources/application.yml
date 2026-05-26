@@ -1,0 +1,68 @@
+server:
+  port: 8103
+  error:
+    include-message: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: sanly-analytics
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5452/sanly_analytics}
+    username: ${DB_USERNAME:analytics_user}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 3
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+notification:
+  base-url: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
+  service-key: ${NOTIFICATIONS_KEY_ANALYTICS:analytics-default-key-change-me}
+
+analytics:
+  service-key: ${ANALYTICS_SERVICE_KEY:analytics-ingest-key-change-me}
+
+seed:
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD}
+
+rate-limit:
+  capacity: 100
+  refill-minutes: 1
+  report-capacity: 10
+  report-refill-hours: 1
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.sanly.analytics: INFO
+    org.springframework.security: WARN
