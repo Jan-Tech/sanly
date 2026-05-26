@@ -1,0 +1,84 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test_registry
+    username: test
+    password: test
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 0
+
+# ===== JWT (32-char test secret) =====
+jwt:
+  secret: "01234567890123456789012345678901"
+  expiration-ms: 86400000
+
+# ===== AES-256 field encryption (exactly 32 chars) =====
+encryption:
+  key: "abcdefghijklmnopqrstuvwxyz123456"
+
+# ===== Seed users =====
+seed:
+  admin:
+    username: admin
+    password: "TestAdmin123!"
+  institution:
+    username: institution
+    password: "TestInst123!"
+
+# ===== OTP =====
+otp:
+  expiry-minutes: 5
+  max-attempts: 3
+  lockout-minutes: 15
+  max-resends: 3
+
+# ===== Session =====
+session:
+  expiry-hours: 24
+
+# ===== External services (non-existent in tests — clients are mocked) =====
+notification:
+  base-url: "http://localhost:19999"
+  service-name: "TEST_REGISTRY"
+  service-key: "test-notification-key"
+
+analytics:
+  base-url: "http://localhost:19998"
+  service-key: "test-analytics-key"
+
+trusted-service-key: "test-trusted-service-key"
+
+# ===== Rate limiting (generous in tests) =====
+rate-limit:
+  capacity: 100000
+  refill-tokens: 100000
+  refill-duration-minutes: 1
+
+logging:
+  level:
+    com.sanly: INFO
+    org.flywaydb: INFO
+    org.springframework.security: WARN

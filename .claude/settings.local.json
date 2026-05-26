@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "c:\\Users\\jan.kabayev\\Desktop\\Practice\\sanly-civil\\src\\main\\java\\com\\sanly\\civil\\entity",
+      "c:\\Users\\jan.kabayev\\Desktop\\Practice\\sanly-civil\\src\\main\\java\\com\\sanly\\civil\\client"
+    ]
+  }
+}

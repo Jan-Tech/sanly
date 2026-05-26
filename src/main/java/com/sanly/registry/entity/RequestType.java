@@ -1,0 +1,12 @@
+package com.sanly.registry.entity;
+
+public enum RequestType {
+    DELETE_MEDICAL_RECORDS,
+    DELETE_CRIMINAL_RECORD,
+    CORRECT_PERSONAL_INFO,
+    DELETE_AUDIT_LOG_ENTRIES,
+    REVIEW_DATA_ACCESS,
+    EXPORT_MY_DATA,
+    DELETE_ACCOUNT,
+    OTHER
+}

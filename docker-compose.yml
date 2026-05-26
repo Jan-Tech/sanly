@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+
+  app:
+    build: .
+    container_name: sanly-registry-app
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/sanly_registry
+      DB_USERNAME: ${DB_USERNAME:-sanly_user}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      INSTITUTION_USERNAME: ${INSTITUTION_USERNAME:-institution}
+      INSTITUTION_PASSWORD: ${INSTITUTION_PASSWORD:?INSTITUTION_PASSWORD must be set}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sanly-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sanly-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: sanly_registry
+      POSTGRES_USER: ${DB_USERNAME:-sanly_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-sanly_user} -d sanly_registry"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sanly-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sanly-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@sanly.tm}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - sanly-net
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  sanly-net:
+    driver: bridge

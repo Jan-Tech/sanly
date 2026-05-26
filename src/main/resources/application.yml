@@ -1,0 +1,119 @@
+spring:
+  application:
+    name: sanly-citizen-registry
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/sanly_registry}
+    username: ${DB_USERNAME:sanly_user}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        default_schema: public
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+# ===== JWT =====
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24 hours
+
+# ===== Field-level Encryption =====
+encryption:
+  key: ${ENCRYPTION_KEY}   # Must be exactly 32 chars (AES-256)
+
+# ===== Rate Limiting =====
+rate-limit:
+  capacity: 100
+  refill-tokens: 100
+  refill-duration-minutes: 1
+
+# ===== Admin & Institution Seed Users =====
+seed:
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD}
+  institution:
+    username: ${INSTITUTION_USERNAME:institution}
+    password: ${INSTITUTION_PASSWORD}
+
+# ===== Actuator =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# ===== Swagger / OpenAPI =====
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+
+# ===== Trusted Service Keys (service-to-service) =====
+# Comma-separated list of keys permitted to call internal service endpoints
+trusted-service-key: ${SIGNATURE_REGISTRY_SERVICE_KEY:signature-registry-key-change-me}
+
+# ===== OTP =====
+otp:
+  expiry-minutes: ${OTP_EXPIRY_MINUTES:5}
+  max-attempts: ${OTP_MAX_ATTEMPTS:3}
+  lockout-minutes: ${OTP_LOCKOUT_MINUTES:15}
+  max-resends: ${OTP_MAX_RESENDS:3}
+
+# ===== Session =====
+session:
+  expiry-hours: ${SESSION_EXPIRY_HOURS:24}
+
+# ===== Notification Service =====
+notification:
+  base-url: ${NOTIFICATION_SERVICE_URL:http://localhost:8085}
+  service-name: ${SERVICE_NAME:SANLY_REGISTRY}
+  service-key: ${SERVICE_KEY}
+
+analytics:
+  base-url: ${ANALYTICS_URL:http://localhost:8103}
+  service-key: ${ANALYTICS_SERVICE_KEY:analytics-ingest-key-change-me}
+
+# ===== Logging =====
+logging:
+  level:
+    com.sanly: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.flywaydb: INFO
